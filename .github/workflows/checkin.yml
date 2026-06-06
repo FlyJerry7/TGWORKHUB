@@ -1,18 +1,29 @@
 name: GLaDOS Auto Checkin
+  on:
+    schedule:
+      - cron: '0 1 * * *'
+    workflow_dispatch:
 
-on:
-  schedule:
-    - cron: '0 1 * * *'  # 每天 UTC 01:00（台湾时间 09:00）
-  workflow_dispatch:      # 允许手动触发
+  jobs:
+    checkin:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkin
+          run: |
+            echo "Starting GLaDOS checkin..."
+            RESPONSE=$(curl -s -X POST
+  "https://glados.rocks/api/user/checkin" \
+              -H "cookie: ${{ secrets.GLADOS_COOKIE }}" \
+              -H "content-type: application/json" \
+              -H "referer: https://glados.rocks/console/checkin" \
+              -d '{"token": "glados.one"}')
+            echo "API Response: $RESPONSE"
 
-jobs:
-  checkin:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkin
-        run: |
-          curl -X POST "https://glados.cloud/api/user/checkin" \
-            -H "cookie: ${{ secrets.GLADOS_COOKIE }}" \
-            -H "content-type: application/json" \
-            -H "referer: https://glados.cloud/console/checkin" \
-            -d '{"token": "glados.one"}'
+            # 检查是否签到成功
+            if echo "$RESPONSE" | grep -q '"code":0\|"message":"Checkin"\|You
+  have successfully checked in'; then
+              echo "✅ 签到成功!"
+            else
+              echo "❌ 签到可能失败，请检查 cookie 或 API 响应"
+              exit 1
+            fi
