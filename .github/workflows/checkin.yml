@@ -21,6 +21,7 @@ jobs:
         env:
           GLADOS_COOKIE: ${{ secrets.GLADOS_COOKIE }}
           GLADOS_BASE_URL: https://glados.cloud
+          GLADOS_USER_AGENT: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
         shell: bash
         run: |
           set -euo pipefail
@@ -29,6 +30,7 @@ jobs:
 
           const baseUrl = process.env.GLADOS_BASE_URL;
           const cookie = process.env.GLADOS_COOKIE;
+          const userAgent = process.env.GLADOS_USER_AGENT;
 
           if (!cookie) {
             throw new Error("GLADOS_COOKIE is not configured");
@@ -40,9 +42,7 @@ jobs:
             cookie,
             origin: baseUrl,
             referer: `${baseUrl}/console/checkin`,
-            "user-agent":
-              "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " +
-              "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "user-agent": userAgent,
           };
 
           async function request(path, options = {}) {
